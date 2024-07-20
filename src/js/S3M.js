@@ -9,6 +9,6 @@ export default class S3M {
     }
 
     async upload() {
-        console.log('Uploading file: ', this.file);
+        //
     }
 }

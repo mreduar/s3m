@@ -35,7 +35,7 @@
     "scripts": {
         "build": "npm run build:esm && npm run build:umd",
         "build:esm": "microbundle -i ./src/js/index.js -o ./dist/index.js --format modern,esm --no-sourcemap --no-generateTypes --external none",
-        "build:umd": "microbundle -i ./src/js/browser.js -o ./dist/function.js --format umd --name route --no-sourcemap --no-generateTypes --external none",
+        "build:umd": "microbundle -i ./src/js/browser.js -o ./dist/function.js --format umd --name s3m --no-sourcemap --no-generateTypes --external none",
         "format": "prettier . --write"
     },
     "devDependencies": {
