@@ -13,6 +13,6 @@ class BladeFunctionGenerator
 
     private function getHelperFunction(): string
     {
-        return file_get_contents(__DIR__ . '/../dist/function.umd.js');
+        return file_get_contents(__DIR__.'/../dist/function.umd.js');
     }
 }

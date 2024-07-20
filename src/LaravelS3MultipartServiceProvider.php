@@ -23,6 +23,6 @@ class LaravelS3MultipartServiceProvider extends PackageServiceProvider
 
     protected function registerDirective(BladeCompiler $blade)
     {
-        $blade->directive('s3m', fn () => "<?php echo app('" . BladeFunctionGenerator::class . "')->generate(); ?>");
+        $blade->directive('s3m', fn () => "<?php echo app('".BladeFunctionGenerator::class."')->generate(); ?>");
     }
 }
