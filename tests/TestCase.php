@@ -3,8 +3,8 @@
 namespace MrEduar\LaravelS3Multipart\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use MrEduar\LaravelS3Multipart\LaravelS3MultipartServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {

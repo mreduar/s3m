@@ -1,0 +1,50 @@
+{
+    "name": "s3m",
+    "version": "0.0.1",
+    "description": "Multipart Uploads using Laravel and AWS S3",
+    "keywords": [
+        "laravel",
+        "AWS",
+        "Amazon S3",
+        "S3"
+    ],
+    "homepage": "https://github.com/mreduar/laravel-s3-multipart",
+    "bugs": "https://github.com/mreduar/laravel-s3-multipart/issues",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mreduar/laravel-s3-multipart.git"
+    },
+    "authors": [
+        {
+            "name": "Eduar Bastidas",
+            "email": "eduarbastidas10@gmail.com"
+        }
+    ],
+    "files": [
+        "src/js/index.js",
+        "dist"
+    ],
+    "type": "module",
+    "source": "./src/js/index.js",
+    "exports": {
+        "types": "./src/js/index.d.ts",
+        "default": "./dist/index.js"
+    },
+    "module": "./dist/index.esm.js",
+    "scripts": {
+        "build": "npm run build:esm && npm run build:umd",
+        "build:esm": "microbundle -i ./src/js/index.js -o ./dist/index.js --format modern,esm --no-sourcemap --no-generateTypes --external none",
+        "build:umd": "microbundle -i ./src/js/browser.js -o ./dist/function.js --format umd --name route --no-sourcemap --no-generateTypes --external none",
+        "format": "prettier . --write"
+    },
+    "devDependencies": {
+        "microbundle": "^0.15.1",
+        "prettier": "^3.3.3"
+    },
+    "prettier": {
+        "printWidth": 100,
+        "singleQuote": true,
+        "tabWidth": 4
+    }
+}
