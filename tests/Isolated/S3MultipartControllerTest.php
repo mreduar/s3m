@@ -77,3 +77,17 @@ it('data are validating', function () {
         'cache_control' => 'max-age=31536000',
     ]))->assertInvalid('bucket');
 });
+
+it('catching exception when bucket is invalid', function () {
+    $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
+
+    $mock->shouldReceive('createMultipartUpload')->once()->andThrow(new Exception('Bucket not found'));
+
+    $this->app->instance(Aws\S3\S3Client::class, $mock);
+
+    getJson(route('s3m.create-multipart'))
+        ->assertStatus(500)
+        ->assertJson([
+            'error' => 'Bucket not found',
+        ]);
+});
