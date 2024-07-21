@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 use function Pest\Laravel\getJson;
@@ -90,4 +91,61 @@ it('catching exception when bucket is invalid', function () {
         ->assertJson([
             'error' => 'Bucket not found',
         ]);
+});
+
+it('can sign part upload', function () {
+    $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
+    $mock->shouldReceive('getCommand')->once()->andReturn(new Aws\Command('test'));
+
+    $mockRequest = Mockery::mock(\Psr\Http\Message\RequestInterface::class);
+    $mockRequest->shouldReceive('getUri')->once()->andReturn(new \GuzzleHttp\Psr7\Uri('https://example.com?foo=bar'));
+    $mockRequest->shouldReceive('getHeaders')->once()->andReturn([
+        'ETag' => $eTagHeader = Str::random(),
+    ]);
+
+    $mock->shouldReceive('createPresignedRequest')->once()->andReturn($mockRequest);
+
+    $this->app->instance(Aws\S3\S3Client::class, $mock);
+
+    getJson(route('s3m.create-sign-part', [
+        'key' => Str::uuid()->toString(),
+        'part_number' => 1,
+        'upload_id' => Str::random(),
+        'content_type' => 'image/jpeg',
+    ]))
+        ->assertCreated()
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->has('bucket')
+            ->has('key')
+            ->where('url', 'https://example.com?foo=bar')
+            ->where('headers', [
+                'ETag' => $eTagHeader,
+                'Content-Type' => 'image/jpeg',
+            ])
+        );
+});
+
+it('signing urls requires key and part_number', function () {
+    getJson(route('s3m.create-sign-part'))
+        ->assertInvalid([
+            'key',
+            'part_number',
+            'upload_id',
+        ]);
+});
+
+it('signing urls catched exceptions when upload_id is invalid', function () {
+    $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
+    $mock->shouldReceive('getCommand')->once()->andThrow(new Exception('Upload not found'));
+
+    $this->app->instance(Aws\S3\S3Client::class, $mock);
+
+    getJson(route('s3m.create-sign-part', [
+        'key' => Str::uuid()->toString(),
+        'part_number' => 1,
+        'upload_id' => Str::random(),
+        'content_type' => 'image/jpeg',
+    ]))->assertJson([
+        'error' => 'Upload not found',
+    ]);
 });

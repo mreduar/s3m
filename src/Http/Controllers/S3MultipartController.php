@@ -2,6 +2,7 @@
 
 namespace MrEduar\LaravelS3Multipart\Http\Controllers;
 
+use Aws\CommandInterface;
 use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -56,7 +57,33 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
      */
     public function signPartUpload(SignPartRequest $request): JsonResponse
     {
-        return new JsonResponse([]);
+        $this->ensureEnvironmentVariablesAreAvailable($request);
+
+        $client = $this->storageClient();
+
+        $bucket = $request->input('bucket') ?: $_ENV['AWS_BUCKET'];
+
+        $expiresAfter = 5;
+
+        try {
+            $signedRequest = $client->createPresignedRequest(
+                $this->createCommand($request, $client, $bucket),
+                sprintf('+%s minutes', $expiresAfter)
+            );
+
+            $uri = $signedRequest->getUri();
+
+            return response()->json([
+                'bucket' => $bucket,
+                'key' => $request->input('key'),
+                'url' => $uri->getScheme().'://'.$uri->getAuthority().$uri->getPath().'?'.$uri->getQuery(),
+                'headers' => $this->headers($request, $signedRequest),
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -65,6 +92,34 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
     public function completeMultipartUpload(Request $request): JsonResponse
     {
         return new JsonResponse([]);
+    }
+
+    /**
+     * Create a command for the PUT operation.
+     */
+    protected function createCommand(Request $request, S3Client $client, string $bucket): CommandInterface
+    {
+        return $client->getCommand('UploadPart', array_filter([
+            'Bucket' => $bucket,
+            'Key' => $request->input('key'),
+            'UploadId' => $request->input('upload_id'),
+            'PartNumber' => $request->input('part_number'),
+            'ACL' => $request->input('visibility') ?: $this->defaultVisibility(),
+            'ContentType' => $request->input('content_type') ?: 'application/octet-stream',
+        ]));
+    }
+
+    /**
+     * Get the headers that should be used when making the signed request.
+     */
+    protected function headers(Request $request, $signedRequest): array
+    {
+        return array_merge(
+            $signedRequest->getHeaders(),
+            [
+                'Content-Type' => $request->input('content_type') ?: 'application/octet-stream',
+            ]
+        );
     }
 
     /**
