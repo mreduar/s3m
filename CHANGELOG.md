@@ -1,3 +1,3 @@
 # Changelog
 
-All notable changes to `laravel-s3-multipart` will be documented in this file.
+All notable changes to `s3m` will be documented in this file.

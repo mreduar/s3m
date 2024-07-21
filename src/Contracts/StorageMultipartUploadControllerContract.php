@@ -1,11 +1,11 @@
 <?php
 
-namespace MrEduar\LaravelS3Multipart\Contracts;
+namespace MrEduar\S3M\Contracts;
 
 use Illuminate\Http\JsonResponse;
-use MrEduar\LaravelS3Multipart\Http\Requests\CompleteMultipartUploadRequest;
-use MrEduar\LaravelS3Multipart\Http\Requests\CreateMultipartUploadRequest;
-use MrEduar\LaravelS3Multipart\Http\Requests\SignPartRequest;
+use MrEduar\S3M\Http\Requests\CompleteMultipartUploadRequest;
+use MrEduar\S3M\Http\Requests\CreateMultipartUploadRequest;
+use MrEduar\S3M\Http\Requests\SignPartRequest;
 
 interface StorageMultipartUploadControllerContract
 {

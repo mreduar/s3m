@@ -1,6 +1,6 @@
 <?php
 
-use MrEduar\LaravelS3Multipart\BladeFunctionGenerator;
+use MrEduar\S3M\BladeFunctionGenerator;
 
 test('render script tag', function () {
     $routeFunction = file_get_contents(__DIR__.'/../../../dist/function.umd.js');
@@ -15,5 +15,5 @@ test('render script tag', function () {
 test('compile blade directive', function (string $blade, string $output) {
     expect(app('blade.compiler')->compileString($blade))->toBe($output);
 })->with([
-    ['@s3m', "<?php echo app('MrEduar\LaravelS3Multipart\BladeFunctionGenerator')->generate(); ?>"],
+    ['@s3m', "<?php echo app('MrEduar\S3M\BladeFunctionGenerator')->generate(); ?>"],
 ]);

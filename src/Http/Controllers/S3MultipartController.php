@@ -1,6 +1,6 @@
 <?php
 
-namespace MrEduar\LaravelS3Multipart\Http\Controllers;
+namespace MrEduar\S3M\Http\Controllers;
 
 use Aws\CommandInterface;
 use Aws\S3\S3Client;
@@ -10,10 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
-use MrEduar\LaravelS3Multipart\Contracts\StorageMultipartUploadControllerContract;
-use MrEduar\LaravelS3Multipart\Http\Requests\CompleteMultipartUploadRequest;
-use MrEduar\LaravelS3Multipart\Http\Requests\CreateMultipartUploadRequest;
-use MrEduar\LaravelS3Multipart\Http\Requests\SignPartRequest;
+use MrEduar\S3M\Contracts\StorageMultipartUploadControllerContract;
+use MrEduar\S3M\Http\Requests\CompleteMultipartUploadRequest;
+use MrEduar\S3M\Http\Requests\CreateMultipartUploadRequest;
+use MrEduar\S3M\Http\Requests\SignPartRequest;
 
 class S3MultipartController extends Controller implements StorageMultipartUploadControllerContract
 {

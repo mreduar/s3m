@@ -1,5 +1,5 @@
 <?php
 
-use MrEduar\LaravelS3Multipart\Tests\TestCase;
+use MrEduar\S3M\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);

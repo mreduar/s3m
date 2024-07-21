@@ -1,13 +1,13 @@
 <?php
 
-namespace MrEduar\LaravelS3Multipart;
+namespace MrEduar\S3M;
 
 use Illuminate\View\Compilers\BladeCompiler;
-use MrEduar\LaravelS3Multipart\Http\Controllers\S3MultipartController;
+use MrEduar\S3M\Http\Controllers\S3MultipartController;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class LaravelS3MultipartServiceProvider extends PackageServiceProvider
+class S3MServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
@@ -23,9 +23,8 @@ class LaravelS3MultipartServiceProvider extends PackageServiceProvider
         }
 
         $package
-            ->name('laravel-s3-multipart')
-            ->hasRoute('web')
-            ->hasConfigFile();
+            ->name('s3m')
+            ->hasRoute('web');
     }
 
     protected function registerDirective(BladeCompiler $blade)

@@ -1,8 +1,8 @@
 <?php
 
-namespace MrEduar\LaravelS3Multipart;
+namespace MrEduar\S3M;
 
-use MrEduar\LaravelS3Multipart\Output\Script;
+use MrEduar\S3M\Output\Script;
 
 class BladeFunctionGenerator
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace MrEduar\LaravelS3Multipart\Output;
+namespace MrEduar\S3M\Output;
 
 use Stringable;
 

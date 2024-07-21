@@ -1,12 +1,12 @@
 {
-    "name": "mreduar/laravel-s3-multipart",
+    "name": "mreduar/s3m",
     "description": "Multipart Uploads using Laravel and AWS S3",
     "keywords": [
         "Eduar Bastidas",
         "laravel",
-        "laravel-s3-multipart"
+        "s3m"
     ],
-    "homepage": "https://github.com/mreduar/laravel-s3-multipart",
+    "homepage": "https://github.com/mreduar/s3m",
     "license": "MIT",
     "authors": [
         {
@@ -36,19 +36,19 @@
     },
     "autoload": {
         "psr-4": {
-            "MrEduar\\LaravelS3Multipart\\": "src/",
-            "MrEduar\\LaravelS3Multipart\\Database\\Factories\\": "database/factories/"
+            "MrEduar\\S3M\\": "src/",
+            "MrEduar\\S3M\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "MrEduar\\LaravelS3Multipart\\Tests\\": "tests/",
+            "MrEduar\\S3M\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
     "scripts": {
         "post-autoload-dump": "@composer run prepare",
-        "clear": "@php vendor/bin/testbench package:purge-laravel-s3-multipart --ansi",
+        "clear": "@php vendor/bin/testbench package:purge-s3m --ansi",
         "prepare": "@php vendor/bin/testbench package:discover --ansi",
         "build": [
             "@composer run prepare",
@@ -74,10 +74,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "MrEduar\\LaravelS3Multipart\\LaravelS3MultipartServiceProvider"
+                "MrEduar\\S3M\\S3MServiceProvider"
             ],
             "aliases": {
-                "LaravelS3Multipart": "MrEduar\\LaravelS3Multipart\\Facades\\LaravelS3Multipart"
+                "S3M": "MrEduar\\S3M\\Facades\\S3M"
             }
         }
     },

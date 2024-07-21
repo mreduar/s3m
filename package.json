@@ -8,12 +8,12 @@
         "Amazon S3",
         "S3"
     ],
-    "homepage": "https://github.com/mreduar/laravel-s3-multipart",
-    "bugs": "https://github.com/mreduar/laravel-s3-multipart/issues",
+    "homepage": "https://github.com/mreduar/s3m",
+    "bugs": "https://github.com/mreduar/s3m/issues",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/mreduar/laravel-s3-multipart.git"
+        "url": "git+https://github.com/mreduar/s3m.git"
     },
     "authors": [
         {

@@ -1,6 +1,6 @@
 <?php
 
-namespace MrEduar\LaravelS3Multipart\Http\Requests;
+namespace MrEduar\S3M\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;

@@ -1,9 +1,9 @@
 <?php
 
-namespace MrEduar\LaravelS3Multipart\Tests;
+namespace MrEduar\S3M\Tests;
 
 use Mockery;
-use MrEduar\LaravelS3Multipart\LaravelS3MultipartServiceProvider;
+use MrEduar\S3M\S3MServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
@@ -23,7 +23,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            LaravelS3MultipartServiceProvider::class,
+            S3MServiceProvider::class,
         ];
     }
 
