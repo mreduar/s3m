@@ -3,7 +3,7 @@
 use MrEduar\LaravelS3Multipart\BladeFunctionGenerator;
 
 test('render script tag', function () {
-    $routeFunction = file_get_contents(__DIR__.'/../../dist/function.umd.js');
+    $routeFunction = file_get_contents(__DIR__.'/../../../dist/function.umd.js');
 
     expect((new BladeFunctionGenerator)->generate())->toBe(
         <<<HTML

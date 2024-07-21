@@ -2,7 +2,7 @@
 
 namespace MrEduar\LaravelS3Multipart\Tests;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Mockery;
 use MrEduar\LaravelS3Multipart\LaravelS3MultipartServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -11,10 +11,13 @@ class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+    }
 
-        Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'MrEduar\\LaravelS3Multipart\\Database\\Factories\\'.class_basename($modelName).'Factory'
-        );
+    protected function tearDown(): void
+    {
+        Mockery::close();
+
+        parent::tearDown();
     }
 
     protected function getPackageProviders($app)
