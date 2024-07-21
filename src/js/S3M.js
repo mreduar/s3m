@@ -21,24 +21,33 @@ export default class S3M {
      */
     constructor(file, options = {}) {
         this.file = file;
+
         this.options = options;
+
+        this.chunkSize = options.chunk_size || S3M.DEFAULT_CHUNK_SIZE;
+
+        this.maxConcurrentUploads =
+            options.max_concurrent_uploads || S3M.DEFAULT_MAX_CONCURRENT_UPLOADS;
+
+        this.fileName = file.name;
+
+        this.fileSize = file.size;
+
+        this.fileType = file.type;
     }
 
     /**
      * Starts the upload.
      *
-     * @param {File} file
      * @returns {Promise<{key: string, uploadId: string, uuid: string}>}
      */
-    async startUpload(file) {
-        const { name: filename, type: contentType } = file;
-
-        if (!filename) {
+    async startUpload() {
+        if (!this.fileName) {
             throw new Error('Filename is empty');
         }
 
         const { data } = await axios.get('/s3m/create-multipart-upload', {
-            params: { filename, content_type: contentType },
+            params: { filename: this.fileName, content_type: this.fileType },
         });
 
         return data;
@@ -60,7 +69,7 @@ export default class S3M {
 
             const updateProgress = this.options.progress || (() => {});
 
-            const uploadParts = await this.uploadChunks(this.file, key, uploadId, updateProgress);
+            const uploadParts = await this.uploadChunks(key, uploadId, updateProgress);
 
             const fileUrl = await this.completeUpload(key, uploadId, uploadParts);
 
@@ -69,8 +78,8 @@ export default class S3M {
             return {
                 uuid,
                 key,
-                extension: this.file.name.split('.').pop(),
-                name: this.file.name,
+                extension: this.fileName.split('.').pop(),
+                name: this.fileName,
                 url: fileUrl,
             };
         } catch (error) {
@@ -81,29 +90,24 @@ export default class S3M {
     /**
      * Uploads the file in chunks.
      *
-     * @param {File} file - File to upload.
      * @param {string} key - Key to store the file under.
      * @param {string} uploadId - Upload ID.
      * @param {Function} updateProgress - Function to update the upload progress.
      * @returns
      */
-    async uploadChunks(file, key, uploadId, updateProgress) {
-        const chunkSize = this.options.chunk_size || S3M.DEFAULT_CHUNK_SIZE;
-        const maxConruentUploads =
-            this.options.max_concurrent_uploads || S3M.DEFAULT_MAX_CONCURRENT_UPLOADS;
-        const totalChunks = Math.ceil(file.size / chunkSize);
+    async uploadChunks(key, uploadId, updateProgress) {
+        const totalChunks = Math.ceil(this.fileSize / this.chunkSize);
         const progress = new Array(totalChunks).fill(0);
         const parts = [];
-
         let activeUploads = 0;
         let currentChunk = 0;
 
         const uploadNextChunk = async () => {
             if (currentChunk >= totalChunks) return;
 
-            const start = currentChunk * chunkSize;
-            const end = Math.min(start + chunkSize, file.size);
-            const chunk = file.slice(start, end);
+            const start = currentChunk * this.chunkSize;
+            const end = Math.min(start + this.chunkSize, this.fileSize);
+            const chunk = this.file.slice(start, end);
 
             activeUploads++;
             currentChunk++;
@@ -111,7 +115,6 @@ export default class S3M {
             const partNumber = currentChunk;
 
             const part = await this.uploadChunk(
-                file,
                 key,
                 uploadId,
                 partNumber,
@@ -124,13 +127,13 @@ export default class S3M {
 
             activeUploads--;
 
-            if (activeUploads < maxConruentUploads) {
+            if (activeUploads < this.maxConcurrentUploads) {
                 uploadNextChunk();
             }
         };
 
         const initialUploads = Array.from({
-            length: maxConruentUploads,
+            length: this.maxConcurrentUploads,
         }).map(uploadNextChunk);
 
         await Promise.all(initialUploads);
@@ -164,19 +167,18 @@ export default class S3M {
     /**
      * Gets the signed URL for the part.
      *
-     * @param {File} file - File to upload.
      * @param {string} key - Key to store the file under.
      * @param {string} uploadId - Upload ID.
      * @param {number} partNumber - Part number.
      * @returns {Promise<string>}
      */
-    async getSignUrl(file, key, uploadId, partNumber) {
+    async getSignUrl(key, uploadId, partNumber) {
         const {
             data: { url },
         } = await axios.get('/s3m/create-sign-part', {
             params: {
-                filename: file.name,
-                content_type: file.type,
+                filename: this.fileName,
+                content_type: this.fileType,
                 part_number: partNumber,
                 upload_id: uploadId,
                 key,
@@ -189,7 +191,6 @@ export default class S3M {
     /**
      * Uploads a chunk of the file.
      *
-     * @param {File} file - File to upload.
      * @param {string} key - Key to store the file under.
      * @param {string} uploadId - Upload ID.
      * @param {number} partNumber - Part number.
@@ -201,20 +202,11 @@ export default class S3M {
      *
      * @see https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html
      */
-    async uploadChunk(
-        file,
-        key,
-        uploadId,
-        partNumber,
-        chunk,
-        totalChunks,
-        progress,
-        updateProgress,
-    ) {
-        const url = await this.getSignUrl(file, key, uploadId, partNumber);
+    async uploadChunk(key, uploadId, partNumber, chunk, totalChunks, progress, updateProgress) {
+        const url = await this.getSignUrl(key, uploadId, partNumber);
 
         const response = await axios.put(url, chunk, {
-            headers: { 'Content-Type': file.type },
+            headers: { 'Content-Type': this.fileType },
             onUploadProgress: (event) =>
                 this.handleUploadProgress(
                     event,
