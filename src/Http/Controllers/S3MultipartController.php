@@ -11,6 +11,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use MrEduar\LaravelS3Multipart\Contracts\StorageMultipartUploadControllerContract;
+use MrEduar\LaravelS3Multipart\Http\Requests\CompleteMultipartUploadRequest;
 use MrEduar\LaravelS3Multipart\Http\Requests\CreateMultipartUploadRequest;
 use MrEduar\LaravelS3Multipart\Http\Requests\SignPartRequest;
 
@@ -89,9 +90,34 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
     /**
      * Complete a multipart upload.
      */
-    public function completeMultipartUpload(Request $request): JsonResponse
+    public function completeMultipartUpload(CompleteMultipartUploadRequest $request): JsonResponse
     {
-        return new JsonResponse([]);
+        $this->ensureEnvironmentVariablesAreAvailable($request);
+
+        $bucket = $request->input('bucket') ?: $_ENV['AWS_BUCKET'];
+
+        $client = $this->storageClient();
+
+        try {
+            $completeUpload = $client->completeMultipartUpload([
+                'Bucket' => $bucket,
+                'Key' => $request->input('key'),
+                'UploadId' => $request->input('upload_id'),
+                'MultipartUpload' => [
+                    'Parts' => $request->input('parts'),
+                ],
+            ]);
+
+            return response()->json([
+                'url' => $completeUpload['Location'],
+                'bucket' => $bucket,
+                'key' => $request->input('key'),
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

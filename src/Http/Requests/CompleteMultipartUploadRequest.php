@@ -3,6 +3,7 @@
 namespace MrEduar\LaravelS3Multipart\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class CompleteMultipartUploadRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class CompleteMultipartUploadRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return Gate::allows('uploadFiles', [$this->user(), $this->input('bucket')]);
     }
 
     /**
@@ -24,7 +25,12 @@ class CompleteMultipartUploadRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'bucket' => ['nullable', 'string'],
+            'key' => ['required', 'string'],
+            'upload_id' => ['required', 'string'],
+            'parts' => ['required', 'array'],
+            'parts.*.PartNumber' => ['required', 'integer'],
+            'parts.*.ETag' => ['required', 'string'],
         ];
     }
 }

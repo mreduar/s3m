@@ -6,6 +6,8 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 use function Pest\Laravel\getJson;
+use function Pest\Laravel\postJson;
+use function Pest\Laravel\withoutExceptionHandling;
 
 beforeEach(function () {
     Config::set([
@@ -149,3 +151,57 @@ it('signing urls catched exceptions when upload_id is invalid', function () {
         'error' => 'Upload not found',
     ]);
 });
+
+it('can complete multipart upload', function () {
+    $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
+
+    $mock->shouldReceive('completeMultipartUpload')->once()->andReturn([
+        'Location' => 'https://example.com',
+    ]);
+
+    $this->app->instance(Aws\S3\S3Client::class, $mock);
+
+    postJson(route('s3m.complete-multipart'), [
+        'key' => $key = Str::uuid()->toString(),
+        'upload_id' => Str::random(),
+        'parts' => [
+            ['ETag' => Str::random(), 'PartNumber' => 1],
+            ['ETag' => Str::random(), 'PartNumber' => 2],
+        ],
+    ])->assertOk()
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->has('bucket')
+            ->where('key', $key)
+            ->where('url', 'https://example.com')
+        );
+});
+
+it('complete multipart catched exceptions', function () {
+    $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
+    $mock->shouldReceive('completeMultipartUpload')->once()->andThrow(new Exception('Upload not found'));
+
+    $this->app->instance(Aws\S3\S3Client::class, $mock);
+
+    postJson(route('s3m.complete-multipart'), [
+        'key' => Str::uuid()->toString(),
+        'upload_id' => Str::random(),
+        'parts' => [
+            ['ETag' => Str::random(), 'PartNumber' => 1],
+            ['ETag' => Str::random(), 'PartNumber' => 2],
+        ],
+    ])
+        ->assertJson([
+            'error' => 'Upload not found',
+        ]);
+});
+
+it('throw an exception when none of the required env variables are set', function () {
+    unset($_ENV['AWS_BUCKET']);
+    unset($_ENV['AWS_DEFAULT_REGION']);
+    unset($_ENV['AWS_ACCESS_KEY_ID']);
+    unset($_ENV['AWS_SECRET_ACCESS_KEY']);
+
+    withoutExceptionHandling();
+
+    getJson(route('storage.create.multipart'));
+})->throws(InvalidArgumentException::class);
