@@ -28,8 +28,11 @@ When uploading large files to S3, you may run into the 5GB limit for a single PU
 
 -   Upload large files that exceed the 5GB limit
 -   Upload files in parallel
+-   Retry failed uploads automatically
 -   Configurable Chunked uploads
 -   Configurable number of parallel uploads
+-   Authorization checks before uploading files
+-   Configurable retry attempts
 
 ## Architecture
 

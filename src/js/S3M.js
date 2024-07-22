@@ -14,6 +14,13 @@ export default class S3M {
     static DEFAULT_MAX_CONCURRENT_UPLOADS = 5;
 
     /**
+     * Maximum number of retries for a failed upload.
+     *
+     * @type {number}
+     */
+    static DEFAULT_MAX_CHUNK_RETRIES = 3;
+
+    /**
      * Creates a new S3M instance.
      *
      * @param {File} [file] - File to upload.
@@ -36,6 +43,8 @@ export default class S3M {
         this.fileType = file.type;
 
         this.httpClient = options.httpClient ? options.httpClient : axios;
+
+        this.chunkRetries = options.chunk_retries || S3M.DEFAULT_MAX_CHUNK_RETRIES;
     }
 
     /**
@@ -232,22 +241,36 @@ export default class S3M {
     async uploadChunk(key, uploadId, partNumber, chunk, totalChunks, progress, updateProgress) {
         const url = await this.getSignUrl(key, uploadId, partNumber);
 
-        const response = await this.httpClient.put(url, chunk, {
-            headers: { 'Content-Type': this.fileType },
-            onUploadProgress: (event) =>
-                this.handleUploadProgress(
-                    event,
-                    totalChunks,
-                    partNumber - 1,
-                    progress,
-                    updateProgress,
-                ),
-        });
+        const attemptUpload = async (retryCount = 0) => {
+            try {
+                const response = await axios.put(url, chunk, {
+                    headers: { 'Content-Type': this.fileType },
+                    onUploadProgress: (event) =>
+                        this.handleUploadProgress(
+                            event,
+                            totalChunks,
+                            partNumber - 1,
+                            progress,
+                            updateProgress,
+                        ),
+                });
 
-        return {
-            ETag: response.headers.etag,
-            PartNumber: partNumber,
+                return {
+                    ETag: response.headers.etag,
+                    PartNumber: partNumber,
+                };
+            } catch (error) {
+                if (retryCount < this.chunkRetries) {
+                    console.warn(`Retrying chunk ${partNumber}, attempt ${retryCount + 1}`);
+
+                    return attemptUpload(retryCount + 1);
+                } else {
+                    throw error;
+                }
+            }
         };
+
+        return attemptUpload();
     }
 
     /**
