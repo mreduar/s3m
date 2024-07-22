@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\withoutExceptionHandling;
 
@@ -37,7 +36,7 @@ test('response contains a upload id', function () {
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
-    getJson(route('s3m.create-multipart'))
+    postJson(route('s3m.create-multipart'))
         ->assertStatus(200)
         ->assertJson(fn (AssertableJson $json) => $json
             ->has('uuid')
@@ -57,7 +56,7 @@ it('data are validating', function () {
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
-    getJson(route('s3m.create-multipart', [
+    postJson(route('s3m.create-multipart', [
         'bucket' => 'test-bucket',
         'visibility' => 'public',
         'content_type' => 'image/jpeg',
@@ -71,7 +70,7 @@ it('data are validating', function () {
             ->etc()
         );
 
-    getJson(route('s3m.create-multipart', [
+    postJson(route('s3m.create-multipart', [
         'bucket' => [
             'test-bucket',
         ],
@@ -88,7 +87,7 @@ it('catching exception when bucket is invalid', function () {
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
-    getJson(route('s3m.create-multipart'))
+    postJson(route('s3m.create-multipart'))
         ->assertStatus(500)
         ->assertJson([
             'error' => 'Bucket not found',
@@ -109,7 +108,7 @@ it('can sign part upload', function () {
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
-    getJson(route('s3m.create-sign-part', [
+    postJson(route('s3m.create-sign-part', [
         'key' => Str::uuid()->toString(),
         'part_number' => 1,
         'upload_id' => Str::random(),
@@ -128,7 +127,7 @@ it('can sign part upload', function () {
 });
 
 it('signing urls requires key and part_number', function () {
-    getJson(route('s3m.create-sign-part'))
+    postJson(route('s3m.create-sign-part'))
         ->assertInvalid([
             'key',
             'part_number',
@@ -142,7 +141,7 @@ it('signing urls catched exceptions when upload_id is invalid', function () {
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
-    getJson(route('s3m.create-sign-part', [
+    postJson(route('s3m.create-sign-part', [
         'key' => Str::uuid()->toString(),
         'part_number' => 1,
         'upload_id' => Str::random(),
@@ -203,5 +202,5 @@ it('throw an exception when none of the required env variables are set', functio
 
     withoutExceptionHandling();
 
-    getJson(route('storage.create.multipart'));
+    postJson(route('storage.create.multipart'));
 })->throws(InvalidArgumentException::class);

@@ -71,7 +71,7 @@ Add the `@s3m` Blade directive to your main layout (_before_ your application's 
 
 ### Authorization
 
-Before initiating an upload directly to S3, S3M's internal signed storage URL generator will perform an authorization check against the currently authenticated user. If you do not already have one, you should create a UserPolicy for your application using the following command:
+Before initiating an upload directly to S3, S3M's internal signed storage URL generator will perform an authorization check against the currently authenticated user. If you do not already have one, you should create a `UserPolicy` for your application using the following command:
 
 ```bash
 php artisan make:policy UserPolicy --model=User
@@ -104,7 +104,7 @@ const uploadFile = (e) => {
 
     s3m(file, {
         progress: progress => {
-            this.uploadProgress = Math.round(progress * 100);
+            uploadProgress.value = progress;
         }
     }).then((response) => {
         axios.post('/api/profile-photo', {

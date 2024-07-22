@@ -34,6 +34,8 @@ export default class S3M {
         this.fileSize = file.size;
 
         this.fileType = file.type;
+
+        this.httpClient = options.httpClient ? options.httpClient : axios;
     }
 
     /**
@@ -46,9 +48,19 @@ export default class S3M {
             throw new Error('Filename is empty');
         }
 
-        const { data } = await axios.get('/s3m/create-multipart-upload', {
-            params: { filename: this.fileName, content_type: this.fileType },
-        });
+        const { data } = await this.httpClient.post(
+            '/s3m/create-multipart-upload',
+            {
+                filename: this.fileName,
+                content_type: this.fileType,
+                ...this.options.data,
+            },
+            {
+                baseURL: this.options.baseURL || null,
+                headers: this.options.headers || {},
+                ...this.options.options,
+            },
+        );
 
         return data;
     }
@@ -155,11 +167,19 @@ export default class S3M {
     async completeUpload(key, uploadId, parts) {
         const {
             data: { url },
-        } = await axios.post('/s3m/complete-multipart-upload', {
-            parts,
-            upload_id: uploadId,
-            key,
-        });
+        } = await this.httpClient.post(
+            '/s3m/complete-multipart-upload',
+            {
+                parts,
+                upload_id: uploadId,
+                key,
+            },
+            {
+                baseURL: this.options.baseURL || null,
+                headers: this.options.headers || {},
+                ...this.options.options,
+            },
+        );
 
         return url;
     }
@@ -175,15 +195,22 @@ export default class S3M {
     async getSignUrl(key, uploadId, partNumber) {
         const {
             data: { url },
-        } = await axios.get('/s3m/create-sign-part', {
-            params: {
+        } = await this.httpClient.post(
+            '/s3m/create-sign-part',
+            {
                 filename: this.fileName,
                 content_type: this.fileType,
                 part_number: partNumber,
                 upload_id: uploadId,
                 key,
+                ...this.options.data,
             },
-        });
+            {
+                baseURL: this.options.baseURL || null,
+                headers: this.options.headers || {},
+                ...this.options.options,
+            },
+        );
 
         return url;
     }
@@ -205,7 +232,7 @@ export default class S3M {
     async uploadChunk(key, uploadId, partNumber, chunk, totalChunks, progress, updateProgress) {
         const url = await this.getSignUrl(key, uploadId, partNumber);
 
-        const response = await axios.put(url, chunk, {
+        const response = await this.httpClient.put(url, chunk, {
             headers: { 'Content-Type': this.fileType },
             onUploadProgress: (event) =>
                 this.handleUploadProgress(
