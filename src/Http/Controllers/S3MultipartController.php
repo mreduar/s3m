@@ -137,7 +137,7 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
      */
     protected function getKey(string $uuid, string $folder): string
     {
-        return $folder . '/' . $uuid;
+        return $folder.'/'.$uuid;
     }
 
     /**

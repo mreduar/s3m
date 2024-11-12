@@ -27,7 +27,7 @@ class CreateMultipartUploadRequest extends FormRequest
             'visibility' => ['nullable', 'string', function ($attribute, $value, $fail) {
                 if (config('s3m.allow_change_visibility') === false && $value !== 'private') {
                     $fail(__('You are not allowed to change the :attribute of the uploaded file.', [
-                        'attribute' => $attribute
+                        'attribute' => $attribute,
                     ]));
                 }
             }],
@@ -35,7 +35,7 @@ class CreateMultipartUploadRequest extends FormRequest
             'folder' => ['nullable', 'string', function ($attribute, $value, $fail) {
                 if (config('s3m.allow_change_folder') === false && $value !== 'tmp') {
                     $fail(__('You are not allowed to change the :attribute of the uploaded file.', [
-                        'attribute' => $attribute
+                        'attribute' => $attribute,
                     ]));
                 }
             }],
