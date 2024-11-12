@@ -2,6 +2,12 @@
 
 All notable changes to `s3m` will be documented in this file.
 
+## v1.2.0 - 2024-11-12
+
+### Changes
+
+* Now its possible to change visibility and folder of the uploaded files
+
 ## v1.1.1 - 2024-11-12
 
 ### Changes
