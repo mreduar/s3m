@@ -154,9 +154,9 @@ it('signing urls catched exceptions when upload_id is invalid', function () {
 it('can complete multipart upload', function () {
     $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
 
-    $mock->shouldReceive('completeMultipartUpload')->once()->andReturn([
+    $mock->shouldReceive('completeMultipartUpload')->once()->andReturn(new \Aws\Result([
         'Location' => 'https://example.com',
-    ]);
+    ]));
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
@@ -169,7 +169,6 @@ it('can complete multipart upload', function () {
         ],
     ])->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
-            ->has('bucket')
             ->where('key', $key)
             ->where('url', 'https://example.com')
         );

@@ -9,8 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use MrEduar\S3M\Contracts\StorageMultipartUploadControllerContract;
+use MrEduar\S3M\Facades\S3M;
 use MrEduar\S3M\Http\Requests\CompleteMultipartUploadRequest;
 use MrEduar\S3M\Http\Requests\CreateMultipartUploadRequest;
 use MrEduar\S3M\Http\Requests\SignPartRequest;
@@ -22,9 +22,9 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
      */
     public function createMultipartUpload(CreateMultipartUploadRequest $request): JsonResponse
     {
-        $this->ensureEnvironmentVariablesAreAvailable($request);
+        S3M::ensureEnvironmentVariablesAreAvailable($request->only('bucket'));
 
-        $client = $this->storageClient();
+        $client = S3M::storageClient();
 
         $bucket = $request->input('bucket') ?: $_ENV['AWS_BUCKET'];
 
@@ -58,9 +58,9 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
      */
     public function signPartUpload(SignPartRequest $request): JsonResponse
     {
-        $this->ensureEnvironmentVariablesAreAvailable($request);
+        S3M::ensureEnvironmentVariablesAreAvailable($request->only('bucket'));
 
-        $client = $this->storageClient();
+        $client = S3M::storageClient();
 
         $bucket = $request->input('bucket') ?: $_ENV['AWS_BUCKET'];
 
@@ -92,25 +92,9 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
      */
     public function completeMultipartUpload(CompleteMultipartUploadRequest $request): JsonResponse
     {
-        $this->ensureEnvironmentVariablesAreAvailable($request);
-
-        $bucket = $request->input('bucket') ?: $_ENV['AWS_BUCKET'];
-
-        $client = $this->storageClient();
-
         try {
-            $completeUpload = $client->completeMultipartUpload([
-                'Bucket' => $bucket,
-                'Key' => $request->input('key'),
-                'UploadId' => $request->input('upload_id'),
-                'MultipartUpload' => [
-                    'Parts' => $request->input('parts'),
-                ],
-            ]);
-
             return response()->json([
-                'url' => $completeUpload['Location'],
-                'bucket' => $bucket,
+                'url' => S3M::completeMultipartUpload($request->all())['Location'],
                 'key' => $request->input('key'),
             ]);
         } catch (Exception $e) {
@@ -146,57 +130,6 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
                 'Content-Type' => $request->input('content_type') ?: 'application/octet-stream',
             ]
         );
-    }
-
-    /**
-     * Ensure the required environment variables are available.
-     *
-     * @throws \InvalidArgumentException
-     */
-    protected function ensureEnvironmentVariablesAreAvailable(Request $request): void
-    {
-        $missing = array_diff_key(array_flip(array_filter([
-            $request->input('bucket') ? null : 'AWS_BUCKET',
-            'AWS_DEFAULT_REGION',
-            'AWS_ACCESS_KEY_ID',
-            'AWS_SECRET_ACCESS_KEY',
-        ])), $_ENV);
-
-        if (empty($missing)) {
-            return;
-        }
-
-        throw new InvalidArgumentException(
-            'Unable to issue signed URL. Missing environment variables: '.implode(', ', array_keys($missing))
-        );
-    }
-
-    /**
-     * Get the S3 storage client instance.
-     */
-    protected function storageClient(): S3Client
-    {
-        $config = [
-            'region' => config('filesystems.disks.s3.region', $_ENV['AWS_DEFAULT_REGION']),
-            'version' => 'latest',
-            'signature_version' => 'v4',
-            'use_path_style_endpoint' => config('filesystems.disks.s3.use_path_style_endpoint', false),
-        ];
-
-        $config['credentials'] = array_filter([
-            'key' => $_ENV['AWS_ACCESS_KEY_ID'] ?? null,
-            'secret' => $_ENV['AWS_SECRET_ACCESS_KEY'] ?? null,
-            'token' => $_ENV['AWS_SESSION_TOKEN'] ?? null,
-            'url' => $_ENV['AWS_URL'] ?? null,
-            'endpoint' => $_ENV['AWS_URL'] ?? null,
-        ]);
-
-        if (array_key_exists('AWS_URL', $_ENV) && ! is_null($_ENV['AWS_URL'])) {
-            $config['url'] = $_ENV['AWS_URL'];
-            $config['endpoint'] = $_ENV['AWS_URL'];
-        }
-
-        return new S3Client($config);
     }
 
     /**

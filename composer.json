@@ -60,8 +60,8 @@
             "@php vendor/bin/testbench serve"
         ],
         "analyse": "vendor/bin/phpstan analyse",
-        "test": "vendor/bin/pest",
-        "test-coverage": "vendor/bin/pest --coverage",
+        "test": "vendor/bin/pest --ci --testsuite=Common && vendor/bin/pest --ci --testsuite=Isolated",
+        "test-coverage": "vendor/bin/pest --ci --testsuite=Common --coverage && vendor/bin/pest --ci --testsuite=Isolated --coverage",
         "format": "vendor/bin/pint"
     },
     "config": {

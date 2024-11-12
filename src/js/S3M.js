@@ -92,6 +92,19 @@ export default class S3M {
 
             const uploadParts = await this.uploadChunks(key, uploadId, updateProgress);
 
+            if (this.options.auto_complete === false) {
+                updateProgress(100);
+
+                return {
+                    uuid,
+                    key,
+                    extension: this.fileName.split('.').pop(),
+                    name: this.fileName,
+                    upload_id: uploadId,
+                    parts: uploadParts,
+                };
+            }
+
             const fileUrl = await this.completeUpload(key, uploadId, uploadParts);
 
             updateProgress(100);
