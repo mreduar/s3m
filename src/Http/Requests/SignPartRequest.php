@@ -29,7 +29,13 @@ class SignPartRequest extends FormRequest
             'part_number' => ['required', 'integer'],
             'upload_id' => ['required', 'string'],
             'bucket' => ['nullable', 'string'],
-            'visibility' => ['nullable', 'string'],
+            'visibility' => ['nullable', 'string', function ($attribute, $value, $fail) {
+                if (config('s3m.allow_change_visibility') === false && $value !== 'private') {
+                    $fail(__('You are not allowed to change the :attribute of the uploaded file.', [
+                        'attribute' => $attribute
+                    ]));
+                }
+            }],
             'content_type' => ['nullable', 'string'],
         ];
     }

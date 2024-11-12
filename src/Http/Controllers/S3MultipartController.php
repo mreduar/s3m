@@ -30,7 +30,7 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
 
         $uuid = (string) Str::uuid();
 
-        $key = $this->getKey($uuid);
+        $key = $this->getKey($uuid, $request->input('folder', 'tmp'));
 
         try {
             $uploader = $client->createMultipartUpload([
@@ -135,9 +135,9 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
     /**
      * Get key for the given UUID.
      */
-    protected function getKey(string $uuid): string
+    protected function getKey(string $uuid, string $folder): string
     {
-        return 'tmp/'.$uuid;
+        return $folder . '/' . $uuid;
     }
 
     /**

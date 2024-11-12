@@ -24,6 +24,7 @@ class S3MServiceProvider extends PackageServiceProvider
 
         $package
             ->name('s3m')
+            ->hasConfigFile()
             ->hasRoute('web');
     }
 

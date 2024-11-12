@@ -203,3 +203,23 @@ it('throw an exception when none of the required env variables are set', functio
 
     postJson(route('storage.create.multipart'));
 })->throws(InvalidArgumentException::class);
+
+it('cannot change visibility if config is false', function () {
+    Config::set('s3m.allow_change_visibility', false);
+
+    postJson(route('s3m.create-multipart', [
+        'bucket' => 'test-bucket',
+        'visibility' => 'public',
+        'content_type' => 'image/jpeg',
+        'cache_control' => 'max-age=31536000',
+    ]))->assertInvalid('visibility');
+});
+
+it('cannot change folder if config is false', function () {
+    Config::set('s3m.allow_change_folder', false);
+
+    postJson(route('s3m.create-multipart', [
+        'bucket' => 'test-bucket',
+        'folder' => 'test-folder',
+    ]))->assertInvalid('folder');
+});
