@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use MrEduar\S3M\Contracts\StorageMultipartUploadControllerContract;
+use MrEduar\S3M\Events\MultipartUploadCompleted;
+use MrEduar\S3M\Events\MultipartUploadCreated;
 use MrEduar\S3M\Facades\S3M;
 use MrEduar\S3M\Http\Requests\CompleteMultipartUploadRequest;
 use MrEduar\S3M\Http\Requests\CreateMultipartUploadRequest;
@@ -39,6 +41,8 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
                 'ACL' => $request->input('visibility') ?: $this->defaultVisibility(),
                 'ContentType' => $request->input('content_type') ?: 'application/octet-stream',
             ]);
+
+            MultipartUploadCreated::dispatch($uuid, $bucket, $key, $uploader['UploadId']);
 
             return response()->json([
                 'uuid' => $uuid,
@@ -93,8 +97,17 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
     public function completeMultipartUpload(CompleteMultipartUploadRequest $request): JsonResponse
     {
         try {
+            $data = S3M::completeMultipartUpload($request->all());
+
+            MultipartUploadCompleted::dispatch(
+                $data['Bucket'],
+                $data['Key'],
+                $request->input('upload_id'),
+                $data['Location'],
+            );
+
             return response()->json([
-                'url' => S3M::completeMultipartUpload($request->all())['Location'],
+                'url' => $data['Location'],
                 'key' => $request->input('key'),
             ]);
         } catch (Exception $e) {

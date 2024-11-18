@@ -1,9 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
+use MrEduar\S3M\Events\MultipartUploadCompleted;
+use MrEduar\S3M\Events\MultipartUploadCreated;
 
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\withoutExceptionHandling;
@@ -28,6 +31,8 @@ afterEach(function () {
 });
 
 test('response contains a upload id', function () {
+    Event::fake();
+
     $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
 
     $mock->shouldReceive('createMultipartUpload')->once()->andReturn([
@@ -36,7 +41,7 @@ test('response contains a upload id', function () {
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
-    postJson(route('s3m.create-multipart'))
+    $response = postJson(route('s3m.create-multipart'))
         ->assertStatus(200)
         ->assertJson(fn (AssertableJson $json) => $json
             ->has('uuid')
@@ -45,6 +50,10 @@ test('response contains a upload id', function () {
             ->has('uploadId')
             ->etc()
         );
+
+    Event::assertDispatched(MultipartUploadCreated::class, function ($event) use ($response) {
+        return $event->uuid === $response->json('uuid');
+    });
 });
 
 it('data are validating', function () {
@@ -152,26 +161,35 @@ it('signing urls catched exceptions when upload_id is invalid', function () {
 });
 
 it('can complete multipart upload', function () {
+    Event::fake();
+
     $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
 
     $mock->shouldReceive('completeMultipartUpload')->once()->andReturn(new \Aws\Result([
         'Location' => 'https://example.com',
+        'Bucket' => 'test-bucket',
+        'Key' => $key = Str::uuid()->toString(),
     ]));
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
 
     postJson(route('s3m.complete-multipart'), [
-        'key' => $key = Str::uuid()->toString(),
+        'key' => $key,
         'upload_id' => Str::random(),
         'parts' => [
             ['ETag' => Str::random(), 'PartNumber' => 1],
             ['ETag' => Str::random(), 'PartNumber' => 2],
         ],
-    ])->assertOk()
+    ])
+        ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('key', $key)
             ->where('url', 'https://example.com')
         );
+
+    Event::assertDispatched(MultipartUploadCompleted::class, function ($event) use ($key) {
+        return $event->key === $key;
+    });
 });
 
 it('complete multipart catched exceptions', function () {
