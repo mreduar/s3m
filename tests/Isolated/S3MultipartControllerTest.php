@@ -156,6 +156,8 @@ it('can complete multipart upload', function () {
 
     $mock->shouldReceive('completeMultipartUpload')->once()->andReturn(new \Aws\Result([
         'Location' => 'https://example.com',
+        'Bucket' => 'test-bucket',
+        'Key' => $key = Str::uuid()->toString(),
     ]));
 
     $this->app->instance(Aws\S3\S3Client::class, $mock);
@@ -167,7 +169,8 @@ it('can complete multipart upload', function () {
             ['ETag' => Str::random(), 'PartNumber' => 1],
             ['ETag' => Str::random(), 'PartNumber' => 2],
         ],
-    ])->assertOk()
+    ])
+        ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('key', $key)
             ->where('url', 'https://example.com')
