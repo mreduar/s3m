@@ -256,7 +256,7 @@ export default class S3M {
 
         const attemptUpload = async (retryCount = 0) => {
             try {
-                const response = await axios.put(url, chunk, {
+                const response = await this.httpClient.put(url, chunk, {
                     headers: { 'Content-Type': this.fileType },
                     onUploadProgress: (event) =>
                         this.handleUploadProgress(

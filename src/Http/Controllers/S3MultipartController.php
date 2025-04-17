@@ -19,12 +19,18 @@ use MrEduar\S3M\Http\Requests\SignPartRequest;
 
 class S3MultipartController extends Controller implements StorageMultipartUploadControllerContract
 {
+
+    public function __construct()
+    {
+        $this->middleware(config('s3m.middleware'));
+    }
+
     /**
      * Create a new multipart upload.
      */
     public function createMultipartUpload(CreateMultipartUploadRequest $request): JsonResponse
     {
-        S3M::ensureEnvironmentVariablesAreAvailable($request->only('bucket'));
+        S3M::ensureConfigureVariablesAreAvailable($request->only('bucket'));
 
         $client = S3M::storageClient();
 
@@ -62,11 +68,11 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
      */
     public function signPartUpload(SignPartRequest $request): JsonResponse
     {
-        S3M::ensureEnvironmentVariablesAreAvailable($request->only('bucket'));
+        S3M::ensureConfigureVariablesAreAvailable($request->only('bucket'));
 
         $client = S3M::storageClient();
 
-        $bucket = $request->input('bucket') ?: $_ENV['AWS_BUCKET'];
+        $bucket = $request->input('bucket') ?: S3M::getBucket();
 
         $expiresAfter = 5;
 

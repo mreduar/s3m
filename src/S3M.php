@@ -8,26 +8,33 @@ use InvalidArgumentException;
 
 class S3M
 {
+    public static function getBucket(): string
+    {
+        return config('s3m.s3.bucket');
+    }
+
     /**
-     * Ensure the required environment variables are available.
+     * Ensure the required config variables are available.
      *
      * @throws \InvalidArgumentException
      */
-    public static function ensureEnvironmentVariablesAreAvailable(?array $options = []): void
+    public static function ensureConfigureVariablesAreAvailable(?array $options = []): void
     {
+        $config = config('s3m.s3') ?? [];
+            
         $missing = array_diff_key(array_flip(array_filter([
-            Arr::get($options, 'bucket') ? null : 'AWS_BUCKET',
-            'AWS_DEFAULT_REGION',
-            'AWS_ACCESS_KEY_ID',
-            'AWS_SECRET_ACCESS_KEY',
-        ])), $_ENV);
+            Arr::get($options, 'bucket') ? null : 'bucket',
+            'region',
+            'key',
+            'secret',
+        ])), $config);
 
         if (empty($missing)) {
             return;
         }
 
         throw new InvalidArgumentException(
-            'Unable to issue signed URL. Missing environment variables: '.implode(', ', array_keys($missing))
+            'Unable to issue signed URL. Missing S3M config variables: '.implode(', ', array_keys($missing))
         );
     }
 
@@ -36,27 +43,29 @@ class S3M
      */
     public function storageClient(): S3Client
     {
-        $config = [
-            'region' => config('filesystems.disks.s3.region', $_ENV['AWS_DEFAULT_REGION']),
+        $config = config('s3m.s3');
+
+        $args = [
+            'region' => $config['region'],
             'version' => 'latest',
             'signature_version' => 'v4',
-            'use_path_style_endpoint' => config('filesystems.disks.s3.use_path_style_endpoint', false),
+            'use_path_style_endpoint' => $config['use_path_style_endpoint'],
         ];
 
-        $config['credentials'] = array_filter([
-            'key' => $_ENV['AWS_ACCESS_KEY_ID'] ?? null,
-            'secret' => $_ENV['AWS_SECRET_ACCESS_KEY'] ?? null,
-            'token' => $_ENV['AWS_SESSION_TOKEN'] ?? null,
-            'url' => $_ENV['AWS_URL'] ?? null,
-            'endpoint' => $_ENV['AWS_URL'] ?? null,
+        $args['credentials'] = array_filter([
+            'key' => $config['key'] ?? null,
+            'secret' => $config['secret'] ?? null,
+            'token' => $config['token'] ?? null,
+            'url' => $config['url'] ?? null,
+            'endpoint' => $config['endpoint'] ?? null,
         ]);
 
-        if (array_key_exists('AWS_URL', $_ENV) && ! is_null($_ENV['AWS_URL'])) {
-            $config['url'] = $_ENV['AWS_URL'];
-            $config['endpoint'] = $_ENV['AWS_URL'];
+        if (! empty($config['url'])) {
+            $args['url'] = $config['url'];
+            $args['endpoint'] = $config['endpoint'] ?? null;
         }
 
-        return new S3Client($config);
+        return new S3Client($args);
     }
 
     /**
@@ -64,9 +73,9 @@ class S3M
      */
     public function completeMultipartUpload(?array $options = []): array
     {
-        self::ensureEnvironmentVariablesAreAvailable($options);
+        self::ensureConfigureVariablesAreAvailable($options);
 
-        $bucket = Arr::get($options, 'bucket') ?: $_ENV['AWS_BUCKET'];
+        $bucket = Arr::get($options, 'bucket') ?: self::getBucket();
 
         $client = self::storageClient();
 

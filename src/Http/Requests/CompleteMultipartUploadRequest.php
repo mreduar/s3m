@@ -25,7 +25,13 @@ class CompleteMultipartUploadRequest extends FormRequest
     public function rules()
     {
         return [
-            'bucket' => ['nullable', 'string'],
+            'bucket' => ['nullable', 'string', function ($attribute, $value, $fail) {
+                if (config('s3m.allow_change_bucket') === false && ! empty($value)) {
+                    $fail(__('You are not allowed to change the :attribute of the uploaded file.', [
+                        'attribute' => $attribute,
+                    ]));
+                }
+            }],
             'key' => ['required', 'string'],
             'upload_id' => ['required', 'string'],
             'parts' => ['required', 'array'],
