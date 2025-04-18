@@ -21,10 +21,10 @@ return [
     'allow_change_folder' => false,
 
     /**
-     * Middleware to be used for the multipart upload.  
+     * Middleware to be used for the multipart upload.
      */
     'middleware' => [
-        'web'
+        'web',
     ],
 
     /**

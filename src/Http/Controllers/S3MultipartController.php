@@ -19,7 +19,6 @@ use MrEduar\S3M\Http\Requests\SignPartRequest;
 
 class S3MultipartController extends Controller implements StorageMultipartUploadControllerContract
 {
-
     public function __construct()
     {
         $this->middleware(config('s3m.middleware'));

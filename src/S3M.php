@@ -21,7 +21,7 @@ class S3M
     public static function ensureConfigureVariablesAreAvailable(?array $options = []): void
     {
         $config = config('s3m.s3') ?? [];
-            
+
         $missing = array_diff_key(array_flip(array_filter([
             Arr::get($options, 'bucket') ? null : 'bucket',
             'region',
