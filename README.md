@@ -70,6 +70,16 @@ composer require mreduar/s3m
 
 Add the `@s3m` Blade directive to your main layout (_before_ your application's JavaScript), and the `s3m()` helper function will be available globally!
 
+### Configuration
+
+S3M's default configuration settings can be customized. First, publish the configuration file:
+
+```bash
+php artisan vendor:publish --provider="MrEduar\S3M\S3MServiceProvider"
+```
+
+This will create `config/s3m.php` in your project. There, you can customize S3M's configuration, including the AWS environment settings.
+
 ## Usage
 
 ### Authorization
