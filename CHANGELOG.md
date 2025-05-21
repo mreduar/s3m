@@ -2,6 +2,16 @@
 
 All notable changes to `s3m` will be documented in this file.
 
+## v1.3.1 - 2025-05-21
+
+### Changes
+
+- Added extra assertions to tests. @mreduar (#12)
+- Fix typos in S3MultipartControllerTest descriptions @mreduar (#11)
+- Fix S3M facade annotation @mreduar (#9)
+- Fix startUpload call @mreduar (#10)
+- Bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 @[dependabot[bot]](https://github.com/apps/dependabot) (#7)
+
 ## v1.3.0 - 2025-04-18
 
 ### Changes
