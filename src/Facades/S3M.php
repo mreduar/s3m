@@ -5,7 +5,7 @@ namespace MrEduar\S3M\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void ensureEnvironmentVariablesAreAvailable(array $options)
+ * @method static void ensureConfigureVariablesAreAvailable(array $options)
  * @method static \Aws\S3\S3Client storageClient()
  * @method static array completeMultipartUpload(array $options = [])
  * @method static string getBucket()
