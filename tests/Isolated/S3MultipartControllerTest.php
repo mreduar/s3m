@@ -144,7 +144,7 @@ it('signing urls requires key and part_number', function () {
         ]);
 });
 
-it('signing urls catched exceptions when upload_id is invalid', function () {
+it('signing urls caught exceptions when upload_id is invalid', function () {
     $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
     $mock->shouldReceive('getCommand')->once()->andThrow(new Exception('Upload not found'));
 
@@ -192,7 +192,7 @@ it('can complete multipart upload', function () {
     });
 });
 
-it('complete multipart catched exceptions', function () {
+it('complete multipart caught exceptions', function () {
     $mock = Mockery::mock('overload:'.Aws\S3\S3Client::class);
     $mock->shouldReceive('completeMultipartUpload')->once()->andThrow(new Exception('Upload not found'));
 
