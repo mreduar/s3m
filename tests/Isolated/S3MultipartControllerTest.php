@@ -155,9 +155,11 @@ it('signing urls caught exceptions when upload_id is invalid', function () {
         'part_number' => 1,
         'upload_id' => Str::random(),
         'content_type' => 'image/jpeg',
-    ]))->assertJson([
-        'error' => 'Upload not found',
-    ]);
+    ]))
+        ->assertStatus(500)
+        ->assertJson([
+            'error' => 'Upload not found',
+        ]);
 });
 
 it('can complete multipart upload', function () {
@@ -206,6 +208,7 @@ it('complete multipart caught exceptions', function () {
             ['ETag' => Str::random(), 'PartNumber' => 2],
         ],
     ])
+        ->assertStatus(500)
         ->assertJson([
             'error' => 'Upload not found',
         ]);
