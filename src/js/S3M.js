@@ -81,7 +81,7 @@ export default class S3M {
      */
     async upload() {
         try {
-            const { key, uploadId, uuid } = await this.startUpload(this.file);
+            const { key, uploadId, uuid } = await this.startUpload();
 
             if (!uploadId) {
                 console.error('Upload ID not found');
