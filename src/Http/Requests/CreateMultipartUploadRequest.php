@@ -2,9 +2,11 @@
 
 namespace MrEduar\S3M\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use MrEduar\S3M\Rules\AllowedBucket;
+use MrEduar\S3M\Rules\AllowedFolder;
+use MrEduar\S3M\Rules\AllowedVisibility;
 
 class CreateMultipartUploadRequest extends FormRequest
 {
@@ -24,28 +26,10 @@ class CreateMultipartUploadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bucket' => ['nullable', 'string', function ($attribute, $value, $fail) {
-                if (config('s3m.allow_change_bucket') === false && ! empty($value)) {
-                    $fail(__('You are not allowed to change the :attribute of the uploaded file.', [
-                        'attribute' => $attribute,
-                    ]));
-                }
-            }],
-            'visibility' => ['nullable', 'string', function ($attribute, $value, $fail) {
-                if (config('s3m.allow_change_visibility') === false && $value !== 'private') {
-                    $fail(__('You are not allowed to change the :attribute of the uploaded file.', [
-                        'attribute' => $attribute,
-                    ]));
-                }
-            }],
+            'bucket' => ['nullable', 'string', new AllowedBucket],
+            'visibility' => ['nullable', 'string', new AllowedVisibility],
             'content_type' => ['nullable', 'string'],
-            'folder' => ['nullable', 'string', function ($attribute, $value, $fail) {
-                if (config('s3m.allow_change_folder') === false && $value !== 'tmp') {
-                    $fail(__('You are not allowed to change the :attribute of the uploaded file.', [
-                        'attribute' => $attribute,
-                    ]));
-                }
-            }],
+            'folder' => ['nullable', 'string', new AllowedFolder],
         ];
     }
 }
