@@ -16,11 +16,8 @@
     backupStaticProperties="false"
 >
     <testsuites>
-        <testsuite name="Common">
-            <directory>./tests/Common</directory>
-        </testsuite>
-        <testsuite name="Isolated">
-            <directory>./tests/Isolated</directory>
+        <testsuite name="Tests">
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
     <logging>

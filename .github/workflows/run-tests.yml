@@ -62,4 +62,4 @@ jobs:
         run: composer show -D
 
       - name: Execute tests
-        run: vendor/bin/pest --ci --testsuite=Common && vendor/bin/pest --ci --testsuite=Isolated
+        run: vendor/bin/pest --ci
