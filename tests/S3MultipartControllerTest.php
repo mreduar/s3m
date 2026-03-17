@@ -104,7 +104,7 @@ it('catching exception when bucket is invalid', function () {
     postJson(route('s3m.create-multipart'))
         ->assertStatus(500)
         ->assertJson([
-            'error' => 'Bucket not found',
+            'error' => 'Failed to create multipart upload.',
         ]);
 });
 
@@ -163,7 +163,7 @@ it('signing urls caught exceptions when upload_id is invalid', function () {
     ]))
         ->assertStatus(500)
         ->assertJson([
-            'error' => 'Upload not found',
+            'error' => 'Failed to sign part upload.',
         ]);
 });
 
@@ -215,7 +215,7 @@ it('complete multipart caught exceptions', function () {
     ])
         ->assertStatus(500)
         ->assertJson([
-            'error' => 'Upload not found',
+            'error' => 'Failed to complete multipart upload.',
         ]);
 });
 

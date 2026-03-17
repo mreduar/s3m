@@ -18,11 +18,6 @@ class CreateMultipartUploadRequest extends FormRequest
         return Gate::allows('uploadFiles', [$this->user(), $this->input('bucket')]);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array|string>
-     */
     public function rules(): array
     {
         return [
