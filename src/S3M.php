@@ -16,7 +16,7 @@ class S3M
     /**
      * Ensure the required config variables are available.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function ensureConfigureVariablesAreAvailable(?array $options = []): void
     {

@@ -1,5 +1,9 @@
 <?php
 
+use Aws\Command;
+use Aws\Result;
+use Aws\S3\S3Client;
+use GuzzleHttp\Psr7\Uri;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -7,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use MrEduar\S3M\Events\MultipartUploadCompleted;
 use MrEduar\S3M\Events\MultipartUploadCreated;
+use Psr\Http\Message\RequestInterface;
 
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\withoutExceptionHandling;
@@ -33,13 +38,13 @@ afterEach(function () {
 test('response contains a upload id', function () {
     Event::fake();
 
-    $mock = Mockery::mock(Aws\S3\S3Client::class);
+    $mock = Mockery::mock(S3Client::class);
 
     $mock->shouldReceive('createMultipartUpload')->once()->andReturn([
         'UploadId' => 'example-upload-id',
     ]);
 
-    $this->app->instance(Aws\S3\S3Client::class, $mock);
+    $this->app->instance(S3Client::class, $mock);
 
     $response = postJson(route('s3m.create-multipart'))
         ->assertStatus(200)
@@ -57,13 +62,13 @@ test('response contains a upload id', function () {
 });
 
 it('data are validating', function () {
-    $mock = Mockery::mock(Aws\S3\S3Client::class);
+    $mock = Mockery::mock(S3Client::class);
 
     $mock->shouldReceive('createMultipartUpload')->once()->andReturn([
         'UploadId' => 'example-upload-id',
     ]);
 
-    $this->app->instance(Aws\S3\S3Client::class, $mock);
+    $this->app->instance(S3Client::class, $mock);
 
     postJson(route('s3m.create-multipart', [
         'bucket' => 'test-bucket',
@@ -90,11 +95,11 @@ it('data are validating', function () {
 });
 
 it('catching exception when bucket is invalid', function () {
-    $mock = Mockery::mock(Aws\S3\S3Client::class);
+    $mock = Mockery::mock(S3Client::class);
 
     $mock->shouldReceive('createMultipartUpload')->once()->andThrow(new Exception('Bucket not found'));
 
-    $this->app->instance(Aws\S3\S3Client::class, $mock);
+    $this->app->instance(S3Client::class, $mock);
 
     postJson(route('s3m.create-multipart'))
         ->assertStatus(500)
@@ -104,18 +109,18 @@ it('catching exception when bucket is invalid', function () {
 });
 
 it('can sign part upload', function () {
-    $mock = Mockery::mock(Aws\S3\S3Client::class);
-    $mock->shouldReceive('getCommand')->once()->andReturn(new Aws\Command('test'));
+    $mock = Mockery::mock(S3Client::class);
+    $mock->shouldReceive('getCommand')->once()->andReturn(new Command('test'));
 
-    $mockRequest = Mockery::mock(\Psr\Http\Message\RequestInterface::class);
-    $mockRequest->shouldReceive('getUri')->once()->andReturn(new \GuzzleHttp\Psr7\Uri('https://example.com?foo=bar'));
+    $mockRequest = Mockery::mock(RequestInterface::class);
+    $mockRequest->shouldReceive('getUri')->once()->andReturn(new Uri('https://example.com?foo=bar'));
     $mockRequest->shouldReceive('getHeaders')->once()->andReturn([
         'ETag' => $eTagHeader = Str::random(),
     ]);
 
     $mock->shouldReceive('createPresignedRequest')->once()->andReturn($mockRequest);
 
-    $this->app->instance(Aws\S3\S3Client::class, $mock);
+    $this->app->instance(S3Client::class, $mock);
 
     postJson(route('s3m.create-sign-part', [
         'key' => Str::uuid()->toString(),
@@ -145,10 +150,10 @@ it('signing urls requires key and part_number', function () {
 });
 
 it('signing urls caught exceptions when upload_id is invalid', function () {
-    $mock = Mockery::mock(Aws\S3\S3Client::class);
+    $mock = Mockery::mock(S3Client::class);
     $mock->shouldReceive('getCommand')->once()->andThrow(new Exception('Upload not found'));
 
-    $this->app->instance(Aws\S3\S3Client::class, $mock);
+    $this->app->instance(S3Client::class, $mock);
 
     postJson(route('s3m.create-sign-part', [
         'key' => Str::uuid()->toString(),
@@ -165,15 +170,15 @@ it('signing urls caught exceptions when upload_id is invalid', function () {
 it('can complete multipart upload', function () {
     Event::fake();
 
-    $mock = Mockery::mock(Aws\S3\S3Client::class);
+    $mock = Mockery::mock(S3Client::class);
 
-    $mock->shouldReceive('completeMultipartUpload')->once()->andReturn(new \Aws\Result([
+    $mock->shouldReceive('completeMultipartUpload')->once()->andReturn(new Result([
         'Location' => 'https://example.com',
         'Bucket' => 'test-bucket',
         'Key' => $key = Str::uuid()->toString(),
     ]));
 
-    $this->app->instance(Aws\S3\S3Client::class, $mock);
+    $this->app->instance(S3Client::class, $mock);
 
     postJson(route('s3m.complete-multipart'), [
         'key' => $key,
@@ -195,10 +200,10 @@ it('can complete multipart upload', function () {
 });
 
 it('complete multipart caught exceptions', function () {
-    $mock = Mockery::mock(Aws\S3\S3Client::class);
+    $mock = Mockery::mock(S3Client::class);
     $mock->shouldReceive('completeMultipartUpload')->once()->andThrow(new Exception('Upload not found'));
 
-    $this->app->instance(Aws\S3\S3Client::class, $mock);
+    $this->app->instance(S3Client::class, $mock);
 
     postJson(route('s3m.complete-multipart'), [
         'key' => Str::uuid()->toString(),
