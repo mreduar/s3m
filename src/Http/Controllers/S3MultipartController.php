@@ -16,6 +16,7 @@ use MrEduar\S3M\Facades\S3M;
 use MrEduar\S3M\Http\Requests\CompleteMultipartUploadRequest;
 use MrEduar\S3M\Http\Requests\CreateMultipartUploadRequest;
 use MrEduar\S3M\Http\Requests\SignPartRequest;
+use Psr\Http\Message\RequestInterface;
 
 class S3MultipartController extends Controller implements StorageMultipartUploadControllerContract
 {
@@ -33,7 +34,7 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
 
         $client = S3M::storageClient();
 
-        $bucket = $request->input('bucket') ?: $_ENV['AWS_BUCKET'];
+        $bucket = $request->input('bucket') ?: S3M::getBucket();
 
         $uuid = (string) Str::uuid();
 
@@ -56,8 +57,10 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
                 'uploadId' => $uploader['UploadId'],
             ]);
         } catch (Exception $e) {
+            report($e);
+
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => 'Failed to create multipart upload.',
             ], 500);
         }
     }
@@ -73,7 +76,7 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
 
         $bucket = $request->input('bucket') ?: S3M::getBucket();
 
-        $expiresAfter = 5;
+        $expiresAfter = config('s3m.signed_url_expiration', 5);
 
         try {
             $signedRequest = $client->createPresignedRequest(
@@ -90,8 +93,10 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
                 'headers' => $this->headers($request, $signedRequest),
             ], 201);
         } catch (Exception $e) {
+            report($e);
+
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => 'Failed to sign part upload.',
             ], 500);
         }
     }
@@ -116,8 +121,10 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
                 'key' => $request->input('key'),
             ]);
         } catch (Exception $e) {
+            report($e);
+
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => 'Failed to complete multipart upload.',
             ], 500);
         }
     }
@@ -140,7 +147,7 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
     /**
      * Get the headers that should be used when making the signed request.
      */
-    protected function headers(Request $request, $signedRequest): array
+    protected function headers(Request $request, RequestInterface $signedRequest): array
     {
         return array_merge(
             $signedRequest->getHeaders(),
@@ -163,6 +170,6 @@ class S3MultipartController extends Controller implements StorageMultipartUpload
      */
     protected function defaultVisibility(): string
     {
-        return 'private';
+        return config('s3m.default_visibility', 'private');
     }
 }
