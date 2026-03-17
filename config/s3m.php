@@ -21,6 +21,21 @@ return [
     'allow_change_folder' => false,
 
     /**
+     * The default visibility for uploaded files.
+     */
+    'default_visibility' => 'private',
+
+    /**
+     * The default folder for uploaded files.
+     */
+    'default_folder' => 'tmp',
+
+    /**
+     * The expiration time (in minutes) for signed URLs.
+     */
+    'signed_url_expiration' => 5,
+
+    /**
      * Middleware to be used for the multipart upload.
      */
     'middleware' => [
