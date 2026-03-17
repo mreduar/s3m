@@ -43,6 +43,10 @@ class S3M
      */
     public function storageClient(): S3Client
     {
+        if (app()->bound(S3Client::class)) {
+            return app(S3Client::class);
+        }
+
         $config = config('s3m.s3');
 
         $args = [
