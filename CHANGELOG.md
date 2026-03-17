@@ -2,20 +2,36 @@
 
 All notable changes to `s3m` will be documented in this file.
 
-## v1.4.0 - 2026-03-17
+## v2.0.0 - 2026-03-17
 
-### What's Changed
+### Breaking
 
-* Bump stefanzweifel/git-auto-commit-action from 5 to 6 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/13
-* Bump aglipanci/laravel-pint-action from 2.5 to 2.6 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/14
-* Bump actions/checkout from 4 to 5 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/15
-* Bump stefanzweifel/git-auto-commit-action from 6 to 7 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/16
-* Bump actions/checkout from 5 to 6 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/17
-* Bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/18
-* Bump ramsey/composer-install from 3 to 4 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/20
-* Bump release-drafter/release-drafter from 6 to 7 by @dependabot[bot] in https://github.com/mreduar/s3m/pull/19
+- Dropped Laravel 10 support. Minimum requirement is now Laravel 11. PHP 8.2+ required.
 
-**Full Changelog**: https://github.com/mreduar/s3m/compare/v1.3.1...v1.4.0
+### Security
+
+- Error responses no longer expose internal exception messages — generic messages are returned to the client while exceptions are logged via `report()`.
+
+### Features
+
+- Configurable signed URL expiration via `s3m.signed_url_expiration` config key.
+- Configurable default visibility via `s3m.default_visibility` config key.
+- Configurable default folder via `s3m.default_folder` config key.
+- Added Laravel 12 and PHP 8.4 support.
+
+### Refactoring
+
+- Replaced inline closure-based validation with reusable `AllowedBucket`, `AllowedVisibility`, and `AllowedFolder` validation rules.
+- Removed direct `$_ENV['AWS_BUCKET']` access in favor of `S3M::getBucket()`.
+- Added return types to `SignPartRequest` and `CompleteMultipartUploadRequest`.
+- Added `RequestInterface` type hint to `headers()` method.
+
+### Build
+
+- Bumped dev dependencies to latest major versions (Pest 3, Larastan 3, Testbench 10).
+- Updated CI matrix for Laravel 11/12 with PHP 8.2–8.4.
+
+**Full Changelog**: https://github.com/mreduar/s3m/compare/v1.3.1...v2.0.0
 
 ## v1.3.1 - 2025-05-21
 
