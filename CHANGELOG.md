@@ -2,6 +2,17 @@
 
 All notable changes to `s3m` will be documented in this file.
 
+## v2.0.1 - 2026-05-05
+
+### Security
+
+- Resolved 7 open Dependabot alerts (5 high, 2 medium) by replacing `microbundle` (unmaintained since 2022) with `esbuild` for the JS build pipeline. Vulnerable transitive dependencies — `rollup`, `svgo`, `minimatch`, `picomatch`, and `serialize-javascript` — are no longer part of the dependency tree.
+
+### Build
+
+- Replaced `microbundle` with `esbuild`. The published `dist/index.js`, `dist/index.esm.js`, and `dist/function.umd.js` artifacts are regenerated and remain functionally equivalent. No public API changes (PHP or JS).
+- `package-lock.json` shrinks from ~7,200 to ~370 lines; `npm install` now reports 0 vulnerabilities.
+
 ## v2.0.0 - 2026-03-17
 
 ### Breaking
