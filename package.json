@@ -33,13 +33,14 @@
     },
     "module": "./dist/index.esm.js",
     "scripts": {
-        "build": "npm run build:esm && npm run build:umd",
-        "build:esm": "microbundle -i ./src/js/index.js -o ./dist/index.js --format modern,esm --no-sourcemap --no-generateTypes --external none",
-        "build:umd": "microbundle -i ./src/js/browser.js -o ./dist/function.js --format umd --name s3m --no-sourcemap --no-generateTypes --external none",
+        "build": "npm run build:esm && npm run build:esm-legacy && npm run build:umd",
+        "build:esm": "esbuild src/js/index.js --bundle --format=esm --target=es2020 --minify --outfile=dist/index.js",
+        "build:esm-legacy": "esbuild src/js/index.js --bundle --format=esm --target=es2017 --minify --outfile=dist/index.esm.js",
+        "build:umd": "esbuild src/js/browser.js --bundle --format=iife --target=es2017 --minify --outfile=dist/function.umd.js",
         "format": "prettier . --write"
     },
     "devDependencies": {
-        "microbundle": "^0.15.1",
+        "esbuild": "^0.25.0",
         "prettier": "^3.3.3"
     },
     "prettier": {
