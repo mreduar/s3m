@@ -2,6 +2,16 @@
 
 All notable changes to `s3m` will be documented in this file.
 
+## v2.0.2 - 2026-06-14
+
+### Security
+
+- Bumped `esbuild` to `^0.28.1` to resolve a high-severity Dependabot alert (GHSA-gv7w-rqvm-qjhr): missing binary integrity verification in esbuild's Deno module could allow remote code execution via `NPM_CONFIG_REGISTRY`. esbuild is a build-only dependency, so the published `dist/index.js`, `dist/index.esm.js`, and `dist/function.umd.js` artifacts are unchanged. `npm audit` reports 0 vulnerabilities.
+
+### Maintenance
+
+- Bumped `dependabot/fetch-metadata` GitHub Action from 2.5.0 to 3.1.0 (#22).
+
 ## v2.0.1 - 2026-05-05
 
 ### Security
