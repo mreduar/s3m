@@ -53,6 +53,13 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
+      - name: Allow advisory-affected versions during matrix testing
+        # The prefer-lowest matrix pins the oldest in-range laravel/framework, which
+        # Composer 2.9+ refuses to install once those versions carry security advisories.
+        # These are ephemeral CI installs for compatibility testing only, never shipped,
+        # so disable advisory blocking here (it stays enabled for real composer updates).
+        run: composer config policy.advisories.block false
+
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "nesbot/carbon:${{ matrix.os == 'windows-latest' && '^^^' || '' }}${{ matrix.carbon }}" --no-interaction --no-update
