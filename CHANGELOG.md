@@ -2,6 +2,28 @@
 
 All notable changes to `s3m` will be documented in this file.
 
+## v3.0.0 - 2026-06-14
+
+### Breaking
+
+- Dropped Laravel 11 support. The supported range is now Laravel 12 and 13 (`illuminate/contracts: ^12.0|^13.0`).
+
+  Laravel 11 has reached the end of its security-support window and every 11.x release is affected by CVE-2026-48019 (CRLF injection in the default email rule), with no patched 11.x version available. Rather than disable Composer's security-advisory blocking to keep testing against a permanently vulnerable framework, support is dropped. Users on Laravel 11 should upgrade.
+
+- Dropped PHP 8.2 support. Minimum requirement is now PHP 8.3 (`php: ^8.3`). The test toolchain (Pest 4, required for Laravel 13) needs PHP 8.3+, so 8.2 can no longer be exercised in CI. PHP 8.2 users can stay on the 2.x line.
+
+### Added
+
+- Laravel 13 support.
+
+### Changed
+
+- Upgraded the dev/test toolchain for Laravel 13: Pest 3 → 4, `pest-plugin-laravel` 3 → 4, `pest-plugin-arch` 3 → 4, `larastan` → ^3.10, `collision` → ^8.8, and `orchestra/testbench` now allows ^10.0|^11.0.
+
+### CI
+
+- The test matrix now targets Laravel 12 and 13 on PHP 8.3 and 8.4. `prefer-lowest` resolves to the first non-advisory release of each line (12.60.0 / 13.10.0), so Composer's advisory blocking stays enabled — no bypass needed.
+
 ## v2.0.2 - 2026-06-14
 
 ### Security
